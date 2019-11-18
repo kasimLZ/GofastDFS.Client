@@ -16,7 +16,8 @@ namespace GoFastDFS.Client.Service
 			var serviceCollection = new ServiceCollection();
 			serviceCollection.AddSingleton<IAuthoritionTokenService, AuthoritionTokenService>()
 				.AddSingleton<IHttpClientFactory, HttpClientFactory>()
-				.AddSingleton<ILetterPigeonCage, LetterPigeonCage>();
+				.AddSingleton<ILetterPigeonCage, LetterPigeonCage>()
+				.AddSingleton<IFastDFSService, FastDFSService>();
 			provider = serviceCollection.BuildServiceProvider();
 		}
 

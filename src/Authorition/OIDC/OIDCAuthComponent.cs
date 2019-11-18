@@ -7,22 +7,29 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+#if NETFRAMEWORK
 using System.Xml;
+#else
+using Microsoft.Extensions.Configuration;
+#endif
 
 namespace GoFastDFS.Client.Authorition.OIDC
 {
 	internal class OIDCAuthComponent : AuthoritionComponentBase, IAuthoritionComponent
 	{
+		[FromConfig(Required = true)]
 		internal Uri AuthorityServer { get; set; }
 
 		/// <summary>
 		/// 
 		/// </summary>
+		[FromConfig(FormatHandler = "DeserializationTicketFromConfig")]
 		public Dictionary<string, string> AuthoritionTicket { get; set; } = new Dictionary<string, string>();
 
 		/// <summary>
 		/// 
 		/// </summary>
+		[FromConfig]
 		public string CredentialKey { get; set; } = "access_token";
 
 		/// <summary>
@@ -33,6 +40,7 @@ namespace GoFastDFS.Client.Authorition.OIDC
 		/// <summary>
 		/// 
 		/// </summary>
+		[FromConfig]
 		public string ExpireTimeKey { get; set; } = "expires_in";
 
 		/// <summary>
@@ -90,5 +98,23 @@ namespace GoFastDFS.Client.Authorition.OIDC
 		{
 			Content.Add(new StringContent(Claim.Token), "auth_token");
 		}
+
+#if NETFRAMEWORK
+		public void DeserializationTicketFromConfig(XmlNode section) 
+		{
+			if (!section.HasChildNodes) return;
+			foreach(XmlNode item in section.ChildNodes)
+				if (item.Name.Equals("Ticket"))
+					AuthoritionTicket.Add(item.Attributes["key"].Value, item.Attributes["value"].Value);
+		}
+#else
+		public void DeserializationTicketFromConfig(IConfigurationSection section) 
+		{
+			var Tickets = section.GetSection("Ticket");
+			if (Tickets == null) return;
+			foreach(var ticket in Tickets.GetChildren())
+				AuthoritionTicket.Add(ticket.Key, ticket.Value);
+		}
+#endif
 	}
 }

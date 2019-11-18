@@ -21,5 +21,7 @@ namespace GoFastDFS.Client.Options
 		/// 
 		/// </summary>
 		public bool Required { get; set; }
+
+		public string FormatHandler { get; set; }
 	}
 }

@@ -10,7 +10,7 @@ namespace GoFastDFS.Client
 	/// <summary>
 	/// Provide basic GoFastDFS upload service
 	/// </summary>
-	public class FastDFSService : IFastDFSService
+	internal class FastDFSService : IFastDFSService
 	{
 		private readonly static ILetterPigeonCage letterPigeon = DependenceInjectService.GetService<ILetterPigeonCage>();
 		private readonly IAuthoritionTokenService iAuthoritionTokenService = DependenceInjectService.GetService<IAuthoritionTokenService>();

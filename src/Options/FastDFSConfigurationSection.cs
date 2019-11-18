@@ -64,14 +64,33 @@ namespace GoFastDFS.Client
 
 			foreach (var info in props)
 			{
-				string name = info.GetCustomAttribute<FromConfig>().Name ?? info.Name;
+				FromConfig config = info.GetCustomAttribute<FromConfig>();
+
+				if(!string.IsNullOrEmpty( config.FormatHandler))
+				{
+					var method = typeof(T).GetMethod(config.FormatHandler, BindingFlags.Public | BindingFlags.Instance);
+					if(method != null)
+					{
+						method.Invoke(Target, new object[] { section });
+						continue;
+					}
+				}
+
+				string name = config.Name ?? info.Name;
 				var attribute = section.Attributes[name];
 				if (attribute != null)
 				{
 					if (info.PropertyType.BaseType == typeof(Enum))
 						info.SetValue(Target, Enum.Parse(info.PropertyType, attribute.Value));
+					if (info.PropertyType == typeof(Uri))
+						info.SetValue(Target, new Uri(attribute.Value));
 					else
 						info.SetValue(Target, Convert.ChangeType(attribute.Value, info.PropertyType));
+				}
+
+				else if (config.Required)
+				{
+					throw new ArgumentNullException($"Missing required attributes: {name}");
 				}
 			}
 		}
@@ -113,6 +132,16 @@ namespace GoFastDFS.Client
 			foreach (var info in props)
 			{
 				var config = info.GetCustomAttribute<FromConfig>();
+				if (!string.IsNullOrEmpty(config.FormatHandler))
+				{
+					var method = typeof(T).GetMethod(config.FormatHandler, BindingFlags.Public | BindingFlags.Instance);
+					if (method != null)
+					{
+						method.Invoke(Target, new object[] { section });
+						continue;
+					}
+				}
+
 				string name = info.Name ?? info.Name;
 				var attribute = section.GetSection(name);
 				if (attribute != null)
@@ -136,8 +165,7 @@ namespace GoFastDFS.Client
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
 		private static IEnumerable<PropertyInfo> GetConfigProperties<T>() =>
-				typeof(T).GetType()
-					.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+				typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic)
 					.Where(a => a.GetCustomAttribute<FromConfig>() != null);
 
 

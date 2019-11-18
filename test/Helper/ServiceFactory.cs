@@ -25,7 +25,7 @@ namespace GoFastDFS.Framework.Test.Helper
 
 		public static IFastDFSService GetService()
 		{
-			return new FastDFSService();
+			return FastDfsServiceFactory.GetService();
 		}
 
 		public static void WriteText(DeliverStatusCollection collection, bool isAsync, bool isError = false)
